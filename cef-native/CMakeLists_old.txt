@@ -1,0 +1,72 @@
+cmake_minimum_required(VERSION 3.15)
+project(BitcoinBrowserShell)
+
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+# Paths
+set(CEF_ROOT "../cef-binaries")
+set(WRAPPER_SRC "${CEF_ROOT}/libcef_dll/wrapper")
+
+# Output
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+
+# Shell source
+set(SOURCES cef_browser_shell.cpp)
+
+# Create executable
+add_executable(BitcoinBrowserShell ${SOURCES})
+
+set_target_properties(BitcoinBrowserShell PROPERTIES
+    MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>"
+)
+
+# Include CEF headers
+target_include_directories(BitcoinBrowserShell PRIVATE
+    ${CEF_ROOT}
+    ${CEF_ROOT}/include
+)
+
+# Add the wrapper library to the build
+add_subdirectory(${WRAPPER_SRC} ${CMAKE_BINARY_DIR}/libcef_dll_wrapper)
+
+# Link libs
+target_link_directories(BitcoinBrowserShell PRIVATE
+    "${CEF_ROOT}/Release"
+)
+
+target_link_libraries(BitcoinBrowserShell PRIVATE
+    libcef
+    libcef_dll_wrapper
+    cef_sandbox
+    user32
+    gdi32
+    ole32
+    oleaut32
+    comdlg32
+    shlwapi
+    uuid
+    winmm
+    dbghelp
+    delayimp
+    shell32
+    advapi32
+    version
+)
+
+# Delay-load
+set_property(TARGET BitcoinBrowserShell PROPERTY LINK_FLAGS "/DELAYLOAD:libcef.dll")
+
+# Required macros
+add_definitions(-DUNICODE -D_UNICODE)
+
+# Copy DLLs
+add_custom_command(TARGET BitcoinBrowserShell POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E echo_append "Copying libcef.dll... "
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        "${CEF_ROOT}/Release/libcef.dll"
+        "$<TARGET_FILE_DIR:BitcoinBrowserShell>"
+    COMMAND ${CMAKE_COMMAND} -E echo "done."
+    COMMENT "Copying libcef.dll to output directory"
+)
+

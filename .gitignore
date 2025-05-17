@@ -22,3 +22,9 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# cef binaries
+/cef-binaries/
+/cef-native/build/
+/cef-native/bin/
+
