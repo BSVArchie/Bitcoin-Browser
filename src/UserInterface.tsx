@@ -270,7 +270,7 @@ export const UserInterface: React.FC<UserInterfaceProps> = ({
                 return permissionsManager;
             };
 
-            debugger
+            // debugger
             const resolver = new LookupResolver({
                 networkPreset: selectedNetwork === 'main' ? 'mainnet' : 'testnet'
             });
